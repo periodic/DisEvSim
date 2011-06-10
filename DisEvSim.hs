@@ -5,10 +5,11 @@ module DisEvSim ( simulate
                 , modW
                 , after
                 , Time
+                , DTime
                 ) where
 
-import Common
-import EventQueue
+import DisEvSim.Common
+import DisEvSim.EventQueue
 
 {-
 import Language.Haskell.TH

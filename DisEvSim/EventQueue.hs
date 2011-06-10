@@ -1,10 +1,10 @@
-module EventQueue ( emptyQueue
-                  , enqueue
-                  , dequeue
-                  , EventQueue
-                  ) where
+module DisEvSim.EventQueue ( emptyQueue
+                           , enqueue
+                           , dequeue
+                           , EventQueue
+                           ) where
 
-import Common
+import DisEvSim.Common
 
 import Data.Map
 
