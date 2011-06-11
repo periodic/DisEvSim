@@ -3,9 +3,11 @@ module DisEvSim ( simulate
                 , getW
                 , putW
                 , modW
+                , getT
                 , after
                 , Time
                 , DTime
+                , Sim
                 ) where
 
 import DisEvSim.Common
@@ -70,6 +72,9 @@ putW w' = modify $ \st -> st { stWorld = w' }
 
 modW :: (world -> world) -> Sim world ev ()
 modW f = modify $ \st -> st { stWorld = f (stWorld st) }
+
+getT :: Sim world ev Time
+getT = stCurrTime <$> get
 
 after :: Time -> ev -> Sim world ev ()
 after dt e =

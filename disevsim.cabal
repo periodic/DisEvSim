@@ -6,13 +6,8 @@ License:            GPL
 License-file:       LICENSE
 Author:             Drew Haven
 Maintainer:         Drew Haven <drew.haven@gmail.com>
-Build-Depends:      base,
-                    mtl,
-                    containers
+Build-depends:      base, mtl, containers
 Build-type:         Simple
 
---Executable:          haq
---Main-is:             Haq.hs
 Exposed-modules:    DisEvSim
-Other-modules:      DisEvSim.Common,
-                    DisEvSim.EventQueue
+Other-modules:      DisEvSim.Common, DisEvSim.EventQueue
