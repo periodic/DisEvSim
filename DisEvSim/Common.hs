@@ -1,5 +1,6 @@
 module DisEvSim.Common where
 
+import Data.DList (DList)
 {-
 import Data.Record.Label
 
@@ -13,3 +14,5 @@ a <.> b = (Cat..) a b
 
 type Time = Double
 type DTime = Double
+
+type EventLog ev = DList (Time, ev)

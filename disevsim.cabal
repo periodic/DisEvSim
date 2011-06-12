@@ -6,8 +6,14 @@ License:            GPL
 License-file:       LICENSE
 Author:             Drew Haven
 Maintainer:         Drew Haven <drew.haven@gmail.com>
-Build-depends:      base, mtl, containers
+Build-depends:      base,
+                    mtl,
+                    dlist,
+                    containers
 Build-type:         Simple
 
-Exposed-modules:    DisEvSim
-Other-modules:      DisEvSim.Common, DisEvSim.EventQueue
+Exposed-modules:    DisEvSim,
+                    DisEvSim.Debug
+Other-modules:      DisEvSim.Common,
+                    DisEvSim.EventQueue,
+                    DisEvSim.Internal
