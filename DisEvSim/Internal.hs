@@ -1,34 +1,22 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell #-}
 module DisEvSim.Internal  where
 
 import DisEvSim.Common
 import DisEvSim.EventQueue
+import DisEvSim.Handler
 
 import Data.Functor ((<$>))
 import qualified Data.DList as L
 import Control.Monad.State as S
 
-simulate :: world -> [ev -> Sim world ev ()] -> ev -> Time -> (Time, [(Time, ev)], world)
+simulate :: world -> [(String, ev -> Sim world ev ())] -> ev -> Time -> (Time, [(Time, ev)], world)
 simulate world handlers event maxT = evalState (runSim $ simLoop maxT) initialState
     where
         initialState = SimState { stCurrTime    = 0
                                 , stEvQueue     = (enqueue 0 event emptyQueue)
                                 , stEvLog       = L.empty
-                                , stHandlers    = handlers
+                                , stHandlers    = handlersFromList handlers
                                 , stWorld       = world
                                 }
-
-data SimState world ev =
-    SimState { stCurrTime :: ! Time
-             , stEvQueue  :: EventQueue ev
-             , stEvLog    :: EventLog ev
-             , stHandlers :: [ev -> Sim world ev ()]
-             , stWorld    :: ! world
-             }
-
-newtype Sim world ev a = Sim {
-    runSim :: S.State (SimState world ev) a
-    } deriving (Monad, MonadState (SimState world ev), Functor)
 
 simLoop :: Time -> Sim world ev (Time, [(Time,ev)], world)
 simLoop maxT =
@@ -49,8 +37,7 @@ simLoop maxT =
                     return (t,log,w)
                     if (t > maxT)
                         then return (maxT, log, w) -- terminate as well.
-                        else let actions = {-# SCC "AccumulateActions" #-} map (\h -> h ev) hs
-                                 world'  = {-# SCC "CreateWorld" #-} foldl (>>) (return ()) actions
+                        else let world'  = processHandlers ev hs
                               in world' `seq` do
                                     world'
                                     simLoop maxT
