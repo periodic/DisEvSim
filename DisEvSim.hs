@@ -5,8 +5,10 @@ module DisEvSim ( simulate
                 , modW
                 , getT
                 , after
+                -- Types
                 , Time
                 , DTime
+                , Handler
                 , Sim
                 ) where
 

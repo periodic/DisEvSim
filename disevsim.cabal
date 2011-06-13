@@ -17,3 +17,4 @@ Exposed-modules:    DisEvSim,
 Other-modules:      DisEvSim.Common,
                     DisEvSim.EventQueue,
                     DisEvSim.Internal
+                    DisEvSim.Handler
