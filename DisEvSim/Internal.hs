@@ -28,31 +28,29 @@ simLoop maxT =
                         w   = stWorld    st
                         log = {-# SCC "makeLog1" #-} L.toList . stEvLog $ st
                     return (t,log,w)
-            Just ev ->
+            Just (t, ev) ->
                 do  st <- get
-                    let t   = stCurrTime st
-                        w   = stWorld    st
+                    let w   = stWorld    st
                         hs  = stHandlers st
                         log = {-# SCC "makeLog2" #-} L.toList . stEvLog $ st
-                    return (t,log,w)
                     if (t > maxT)
                         then return (maxT, log, w) -- terminate as well.
                         else let world'  = processHandlers ev hs
                               in world' `seq` do
+                                    put $ st { stCurrTime = t }
+                                    appendLog t ev
                                     world'
                                     simLoop maxT
 
--- TODO: move updating of t into the simLoop?
-nextEvent :: Sim world ev (Maybe ev)
+nextEvent :: Sim world ev (Maybe (Time, ev))
 nextEvent =
     do  st <- S.get
         let q = stEvQueue st
         case dequeue q of
             (Nothing, _)        -> return Nothing
-            (Just (t', ev), q') -> do
-                put $ st { stEvQueue = q', stCurrTime = t' }
-                appendLog t' ev
-                return . Just $ ev
+            (Just event, q') -> do
+                put $ st { stEvQueue = q'}
+                return . Just $ event
 
 appendLog :: Time -> ev -> Sim world ev ()
 appendLog t e = do
