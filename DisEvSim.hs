@@ -5,6 +5,7 @@ module DisEvSim ( simulate
                 , modW
                 , getT
                 , after
+                , addHandler
                 -- Types
                 , Time
                 , DTime

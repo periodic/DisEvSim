@@ -6,8 +6,8 @@ import Data.Map
 
 makeHandlerId = HandlerId
 
-addHandler :: String -> Handler world ev -> HandlerMap world ev -> HandlerMap world ev
-addHandler = insert . makeHandlerId
+insertHandler :: String -> Handler world ev -> HandlerMap world ev -> HandlerMap world ev
+insertHandler = insert . makeHandlerId
 
 handlersFromList :: [(String, Handler world ev)] -> HandlerMap world ev
 handlersFromList = fromList . Prelude.map (\(k,v) -> (makeHandlerId k, v))

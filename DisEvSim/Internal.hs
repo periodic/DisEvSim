@@ -80,4 +80,9 @@ after dt e =
             q = stEvQueue  st
         put $ st { stEvQueue = enqueue (t + dt) e q }
 
-
+addHandler :: String -> Handler world ev -> Sim world ev ()
+addHandler name h = do
+    st <- get
+    let hs = stHandlers st
+        hs' = insertHandler name h hs
+    put $ st { stHandlers = hs' }
