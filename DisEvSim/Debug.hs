@@ -8,14 +8,15 @@ import DisEvSim.Internal
 import Control.Monad.State
 import Data.DList (toList, empty)
 
-simulateDebug :: (Show world, Show ev) => world -> [(String, Handler world ev)] -> ev -> Time -> SimState world ev
-simulateDebug world handlers event maxT = execState (runSim $ simLoop maxT) initialState
+simulateDebug :: (Show world, Show ev) => Config -> world -> [(String, Handler world ev)] -> ev -> Time -> SimState world ev
+simulateDebug config world handlers event maxT = execState (runSim $ simLoop maxT) initialState
     where
         initialState = SimState { stCurrTime = 0
                                 , stEvQueue  = (enqueue 0 event emptyQueue)
                                 , stEvLog    = empty
                                 , stHandlers = handlersFromList handlers
                                 , stWorld    = world
+                                , stConfig   = config
                                 }
 
 

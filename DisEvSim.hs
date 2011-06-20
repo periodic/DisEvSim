@@ -6,11 +6,14 @@ module DisEvSim ( simulate
                 , getT
                 , after
                 , addHandler
+                , removeHandler
+                , defaultConfig
                 -- Types
                 , Time
                 , DTime
                 , Handler
                 , Sim
+                , Config(..)
                 ) where
 
 import DisEvSim.Common

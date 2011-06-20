@@ -6,5 +6,5 @@ import System.Environment
 
 main = do
     [dur] <- getArgs
-    let (t, _, w) = {-# SCC "simcall" #-} simulate 1 [("sum", \e -> modW (+e) >> after 1 1)] 1 (read dur)
-    print (t, w)
+    let (t, log, w) = {-# SCC "simcall" #-} simulate (defaultConfig { enableLog = False}) 1 [("sum", \e -> modW (+e) >> after 1 1)] 1 (read dur)
+    print (t, log, w)

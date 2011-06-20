@@ -8,14 +8,18 @@ import Data.Functor ((<$>))
 import qualified Data.DList as L
 import Control.Monad.State as S
 
-simulate :: world -> [(String, ev -> Sim world ev ())] -> ev -> Time -> (Time, [(Time, ev)], world)
-simulate world handlers event maxT = evalState (runSim $ simLoop maxT) initialState
+defaultConfig = Config { enableLog = True 
+                       }
+
+simulate :: Config -> world -> [(String, ev -> Sim world ev ())] -> ev -> Time -> (Time, [(Time, ev)], world)
+simulate conf world handlers event maxT = evalState (runSim $ simLoop maxT) initialState
     where
         initialState = SimState { stCurrTime    = 0
                                 , stEvQueue     = (enqueue 0 event emptyQueue)
                                 , stEvLog       = L.empty
                                 , stHandlers    = handlersFromList handlers
                                 , stWorld       = world
+                                , stConfig      = conf
                                 }
 
 simLoop :: Time -> Sim world ev (Time, [(Time,ev)], world)
@@ -56,7 +60,9 @@ appendLog :: Time -> ev -> Sim world ev ()
 appendLog t e = do
     st <- get
     let log' = L.snoc (stEvLog st) (t, e)
-    put $ st { stEvLog = log' }
+    if (enableLog . stConfig $ st)
+        then put $ st { stEvLog = log' }
+        else return ()
 
 -- Public functions
 getW :: Sim world ev world
@@ -84,3 +90,10 @@ addHandler name h = do
     let hs = stHandlers st
         hs' = insertHandler name h hs
     put $ st { stHandlers = hs' }
+
+removeHandler :: String -> Sim world ev ()
+removeHandler name = do
+    st <- get
+    let hs = stHandlers st
+        hs' = deleteHandler name hs
+    put $ st { stHandlers = hs }

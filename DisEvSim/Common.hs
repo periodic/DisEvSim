@@ -15,6 +15,16 @@ set = setL
 a <.> b = (Cat..) a b 
 -}
 
+{-----------------------------------------
+ - Config
+ -----------------------------------------}
+
+data Config = Config { enableLog :: Bool
+                     } deriving (Show)
+
+{-----------------------------------------
+ - Other
+ -----------------------------------------}
 type Time = Double
 type DTime = Double
 
@@ -36,6 +46,7 @@ data SimState world ev =
              , stEvLog    :: EventLog ev
              , stHandlers :: HandlerMap world ev
              , stWorld    :: ! world
+             , stConfig   :: Config -- TODO: Change this to a reader
              }
 
 newtype Sim world ev a = Sim {
