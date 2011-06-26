@@ -6,7 +6,7 @@ License:            GPL
 License-file:       LICENSE
 Author:             Drew Haven
 Maintainer:         Drew Haven <drew.haven@gmail.com>
-Build-depends:      base,
+Build-depends:      base >= 4,
                     mtl,
                     dlist,
                     containers
