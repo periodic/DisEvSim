@@ -1,4 +1,5 @@
-module DisEvSim.Internal  where
+-- | A simple discrete event simulator.
+module DisEvSim.Internal where
 
 import DisEvSim.Common
 import DisEvSim.EventQueue
@@ -8,9 +9,12 @@ import Data.Functor ((<$>))
 import qualified Data.DList as L
 import Control.Monad.State as S
 
-defaultConfig = Config { enableLog = True 
+-- | The default configuration, which enables logging.
+defaultConfig :: Config
+defaultConfig = Config { enableLog = True
                        }
 
+-- | Runs a simulation.
 simulate :: Config -> world -> [(String, ev -> Sim world ev ())] -> ev -> Time -> (Time, [(Time, ev)], world)
 simulate conf world handlers event maxT = evalState (runSim $ simLoop maxT) initialState
     where
@@ -64,19 +68,25 @@ appendLog t e = do
         then put $ st { stEvLog = log' }
         else return ()
 
--- Public functions
+-- * Simulator functions
+
+-- | Returns the state of the world.
 getW :: Sim world ev world
 getW = stWorld <$> get
 
+-- | Updates the state of the world.
 putW :: world -> Sim world ev ()
 putW w' = modify $ \st -> st { stWorld = w' }
 
+-- | Alters the state of the world.
 modW :: (world -> world) -> Sim world ev ()
 modW f = modify $ \st -> st { stWorld = f (stWorld st) }
 
+-- | Returns the current time.
 getT :: Sim world ev Time
 getT = stCurrTime <$> get
 
+-- | Adds an new event to the queue n seconds from now.
 after :: Time -> ev -> Sim world ev ()
 after dt e =
     do  st <- get
@@ -84,6 +94,7 @@ after dt e =
             q = stEvQueue  st
         put $ st { stEvQueue = enqueue (t + dt) e q }
 
+-- | Adds a new handler for events, which will process events.
 addHandler :: String -> Handler world ev -> Sim world ev ()
 addHandler name h = do
     st <- get
