@@ -1,9 +1,24 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, GADTs #-}
 module DisEvSim.Common where
 
+import Control.Monad.State
 import Data.DList (DList)
 import Data.Map (Map)
-import Control.Monad.State
+import Data.Typeable
+
+data EventList where
+    EventListCons :: Event a => EventList -> a -> EventList
+    EventListNil :: EventList
+    deriving (Show)
+
+class (Typeable a, Show a) => Event a where
+    isEvent :: a -> Bool
+    isEvent _ = True
+
+class Handler a where
+    handles :: a -> EventList
+    handle :: Event e => a -> e -> Sim ()
+
 {-
 import Data.Record.Label
 
@@ -27,9 +42,9 @@ type DTime = Double
 type EventLog ev = DList (Time, ev)
 
 -- | The type of an event handler.  It takes events, and performs some action in the world.
-type Handler world ev = ev -> Sim world ev ()
+type Handler world ev = Event ev => ev -> Sim world ev ()
 
-type HandlerMap world ev = Map HandlerId (Handler world ev)
+type HandlerMap world ev = Event ev => Map HandlerId (Handler world ev)
 
 data HandlerId = HandlerId String
                  deriving (Show, Eq, Ord)
@@ -38,7 +53,7 @@ newtype EventQueue a = EventQueue (Map Time [a])
     deriving (Show)
 
 
-data SimState world ev =
+data SimState world ev = Event ev =>
     SimState { stCurrTime :: ! Time
              , stEvQueue  :: EventQueue ev
              , stEvLog    :: EventLog ev
@@ -48,6 +63,7 @@ data SimState world ev =
              }
 
 -- | The sim manad.
-newtype Sim world ev a = Sim {
+newtype Sim world ev a = Event ev => Sim {
     runSim :: State (SimState world ev) a
     } deriving (Monad, MonadState (SimState world ev), Functor)
+

@@ -1,20 +1,33 @@
 Name:               DisEvSim
-Version:            0.1
+Version:            0.2
 Synopsis:           Discrete Event Simulator
 Description:        A simple Discrete Event Simulation framework.
 License:            GPL
 License-file:       LICENSE
 Author:             Drew Haven
 Maintainer:         Drew Haven <drew.haven@gmail.com>
-Build-depends:      base >= 4,
-                    mtl,
-                    dlist,
-                    containers
 Build-type:         Simple
 
-Exposed-modules:    DisEvSim,
-                    DisEvSim.Debug
-Other-modules:      DisEvSim.Common,
-                    DisEvSim.EventQueue,
-                    DisEvSim.Internal
-                    DisEvSim.Handler
+library
+    Exposed-modules:    DisEvSim,
+                        DisEvSim.Debug
+    Other-modules:      DisEvSim.Common,
+                        DisEvSim.EventQueue,
+                        DisEvSim.Internal
+                        DisEvSim.Handler
+    Build-depends:      base >= 4,
+                        mtl,
+                        dlist,
+                        containers
+
+Test-Suite event-queue-tests
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/EventQueueTest.hs
+    build-depends:      base >=4,
+                        HUnit
+
+Test-Suite event-queue-properties
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/EventQueueProperties.hs
+    build-depends:      base >=4,
+                        QuickCheck
