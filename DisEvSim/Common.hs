@@ -1,9 +1,8 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell, GADTs #-}
 module DisEvSim.Common where
 
 import Control.Monad.State
-import Data.DList (DList)
-import Data.Map (Map)
+import Data.Map.Strict (Map)
+import Data.Sequence (Seq)
 import Data.Typeable
 
 -- | An alias for the internal time representation.
@@ -11,25 +10,30 @@ type Time = Double
 -- | An alias for the internal representation of time deltas.
 type TimeDelta = Double
 
-data EventList where
-    EventListCons :: Event a => a -> EventList -> EventList
-    EventListNil :: EventList
+class Typeable a => EventData a where
+    wrap :: a -> Event
+    wrap ev = Event ev
+    unwrap :: Event -> Maybe a
+    unwrap (Event ev) = cast ev
 
-instance Show EventList where
-    show EventListNil = "[]"
-    show (EventListCons a rest) = show (typeOf a) ++ ":" ++ show rest
+data Event where
+    Event :: EventData a => a -> Event
 
-class Typeable a => Event a where
-    isEvent :: a -> Bool
-    isEvent _ = True
+instance Show Event where
+    show (Event ev) = "Event " ++ (show $ typeOf ev) ++ ")"
 
 class Handler a where
-    handles :: a -> EventList
-    handle :: Event e => a -> e -> Sim world ()
+    handles :: a -> [Event]
+    handle :: EventData e => a -> e -> Sim world ()
 
 -- | Configuration options.
 data Config = Config { enableLog :: Bool
                      } deriving (Show)
+
+-- | A priority queue for Events.
+newtype EventQueue = EventQueue {
+        queueAsMap :: Map Time (Seq Event)
+    } deriving (Show)
 
 {-
 -- | A log of events and the times they occur.
@@ -39,10 +43,6 @@ type HandlerMap world = Event ev => Map HandlerId (Handler world ev)
 
 data HandlerId = HandlerId String
                  deriving (Show, Eq, Ord)
-
-data EventQueue = EventQueue
-                  deriving (Show)
-
 
 data SimState world = Event =>
     SimState { stCurrTime :: ! Time

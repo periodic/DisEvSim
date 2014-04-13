@@ -4,24 +4,31 @@ module DisEvSim.EventQueue ( emptyQueue
                            , EventQueue
                            ) where
 
+import qualified Data.Map.Strict as M
+import Data.Sequence ((><), ViewL((:<)))
+import qualified Data.Sequence as S
+
 import DisEvSim.Common
 
-import Data.Map
+enqueue :: Time -> Event -> EventQueue -> EventQueue
+enqueue t ev (EventQueue queue) =
+    EventQueue $ M.insertWith (><) t (S.singleton ev) queue
 
+dequeue :: EventQueue -> Maybe ((Time, Event), EventQueue)
+dequeue (EventQueue queue) = 
+    if M.null queue
+    then Nothing
+    else
+        let ((t, s), queue') = M.deleteFindMin queue
+            v = S.viewl s
+        in case v of
+            S.EmptyL -> error "Empty bucket in EventQueue"
+            (ev :< s') ->
+                if S.null s'
+                then Just ((t, ev), EventQueue queue')
+                else 
+                    let queue'' = M.insert t s' queue'
+                    in Just ((t, ev), EventQueue queue'')
 
-enqueue :: Time -> a -> EventQueue a -> EventQueue a
-enqueue t ev (EventQueue map) =
-    let map' = insertWith' (++) t [ev] map
-     in EventQueue map'
-
-dequeue :: EventQueue a -> (Maybe (Time, a), EventQueue a)
-dequeue q@(EventQueue map) =
-    case minViewWithKey map of
-        Nothing          -> (Nothing, q)
-        Just (evs, map') -> 
-            case evs of
-                (t, (e:[])) -> (Just (t, e), EventQueue map')
-                (t, (e:es)) -> (Just (t, e), EventQueue $ insert t es map')
-
-emptyQueue :: EventQueue a
-emptyQueue = EventQueue empty
+emptyQueue :: EventQueue
+emptyQueue = EventQueue M.empty
