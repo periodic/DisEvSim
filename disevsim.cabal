@@ -6,27 +6,38 @@ License:            GPL
 License-file:       LICENSE
 Author:             Drew Haven
 Maintainer:         Drew Haven <drew.haven@gmail.com>
+
 Build-type:         Simple
+Cabal-version:      >= 1.2
+
+Ghc-options:        -Wall -Werror
+
+-- library
+--     Exposed-modules:    DisEvSim,
+--                         DisEvSim.Debug
+--     Other-modules:      DisEvSim.Common,
+--                         DisEvSim.EventQueue,
+--                         DisEvSim.Internal
+--                         DisEvSim.Handler
+--     Build-depends:      base >= 4,
+--                         mtl,
+--                         dlist,
+--                         containers
 
 library
-    Exposed-modules:    DisEvSim,
-                        DisEvSim.Debug
-    Other-modules:      DisEvSim.Common,
-                        DisEvSim.EventQueue,
-                        DisEvSim.Internal
-                        DisEvSim.Handler
+    Exposed-modules:    DisEvSim.Common
     Build-depends:      base >= 4,
                         mtl,
                         dlist,
                         containers
 
-Test-Suite event-queue-tests
+Test-suite event-queue-tests
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/EventQueueTest.hs
     build-depends:      base >=4,
                         HUnit
 
-Test-Suite event-queue-properties
+Test-suite event-queue-properties
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/EventQueueProperties.hs
     build-depends:      base >=4,

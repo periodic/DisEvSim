@@ -1,11 +1,18 @@
-module DisEvSim.EventQueueTest where
+module Main where
 
-import HUnit
+import System.Exit
+import Test.HUnit
 
-test1 = TestCase $ assertBool "False" False
+test1 :: Test
+test1 = TestCase $ False @? "False"
 
-tests = testList [TestLabel "test1" test1]
+tests :: Test
+tests = test ["test1" ~: test1]
 
-main = runTestTT tests
+main = do
+    counts <- runTestTT tests
+    if (errors counts > 0 || failures counts > 0)
+        then exitFailure
+        else exitSuccess
 
 
