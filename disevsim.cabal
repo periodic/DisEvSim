@@ -27,27 +27,36 @@ library
     Other-modules:      DisEvSim.Common
     Build-depends:      base >= 4,
                         mtl,
-                        dlist,
-                        containers
+                        containers,
+                        lens
     Ghc-options:        -Wall -Werror
     extensions:         DeriveDataTypeable,
                         GADTs,
                         GeneralizedNewtypeDeriving
 
-
-Test-suite event-queue-tests
-    type:               exitcode-stdio-1.0
-    main-is:            DisEvSim/EventQueueTest.hs
-    build-depends:      base >=4,
-                        HUnit
-    Ghc-options:        -Wall -Werror
-    extensions:         DeriveDataTypeable,
-                        GADTs,
-                        GeneralizedNewtypeDeriving
+-- Test-suite event-queue-tests
+--     type:               exitcode-stdio-1.0
+--     main-is:            DisEvSim/EventQueueTest.hs
+--     build-depends:      base >=4,
+--                         HUnit
+--     Ghc-options:        -Wall -Werror
+--     extensions:         DeriveDataTypeable,
+--                         GADTs,
+--                         GeneralizedNewtypeDeriving
 
 Test-suite event-queue-properties
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/EventQueueProperties.hs
+    build-depends:      base >=4,
+                        QuickCheck
+    Ghc-options:        -Wall -Werror
+    extensions:         DeriveDataTypeable,
+                        GADTs,
+                        GeneralizedNewtypeDeriving
+
+Test-suite handler-properties
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/HandlerProperties.hs
     build-depends:      base >=4,
                         QuickCheck
     Ghc-options:        -Wall -Werror

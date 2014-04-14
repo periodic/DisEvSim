@@ -4,20 +4,11 @@ module Main where
 import Control.Applicative ((<$>))
 import Data.List (unfoldr)
 import Data.Maybe (mapMaybe)
-import Data.Typeable
-import System.Exit (exitSuccess, exitFailure)
 import Test.QuickCheck
 
 import DisEvSim.Common
 import DisEvSim.EventQueue
-
-data TestEvent = TestEvent Int
-                 deriving (Show, Eq, Ord, Typeable)
-
-instance EventData TestEvent where
-
-instance Arbitrary TestEvent where
-    arbitrary = TestEvent <$> arbitrary
+import DisEvSim.TestUtil
 
 prop_PreserveOrder :: [TestEvent] -> Bool
 prop_PreserveOrder events =
@@ -35,8 +26,4 @@ prop_EventsInOrder events =
         inOrder _ = True
 
 main :: IO ()
-main = do
-    result <- $quickCheckAll
-    if result
-        then exitSuccess
-        else exitFailure
+main = runQuickCheck $quickCheckAll

@@ -1,7 +1,10 @@
+{-# LANGUAGE TemplateHaskell #-}
 module DisEvSim.Common where
 
+import Control.Lens
+import Control.Monad.Reader
 import Control.Monad.State
-import Data.Map.Strict (Map)
+import Data.Map.Strict (Map, empty)
 import Data.Sequence (Seq)
 import Data.Typeable
 
@@ -16,51 +19,83 @@ class Typeable a => EventData a where
     unwrap :: Event -> Maybe a
     unwrap (Event ev) = cast ev
 
+-- | A wrapper to genericize events.
 data Event where
     Event :: EventData a => a -> Event
 
 instance Show Event where
-    show (Event ev) = "Event " ++ (show $ typeOf ev) ++ ")"
+    show (Event ev) = "Event " ++ (show $ typeOf ev)
 
-class Handler a where
-    handles :: a -> [Event]
-    handle :: EventData e => a -> e -> Sim world ()
+-- | The sim monad.
+newtype Sim world a = Sim {
+    makeSim :: ReaderT Config (State (SimState world)) a
+    } deriving (Monad, MonadState (SimState world), Functor)
+
+runSim :: Config -> SimState world -> Sim world a -> (a, SimState world)
+runSim config st = flip runState st . flip runReaderT config . makeSim
+
+evalSim :: Config -> SimState world -> Sim world a -> a
+evalSim config st = fst . runSim config st
+
+execSim :: Config -> SimState world -> Sim world a -> SimState world
+execSim config st = snd . runSim config st
+
+-- | An event handler
+type Handler world e = e -> Sim world ()
+
+-- | Wraps a handler to genericize it.
+data HandlerWrapper world where
+    HandlerWrapper :: EventData e => Handler world e
+                                  -> TypeRep
+                                  -> HandlerWrapper world
 
 -- | Configuration options.
 data Config = Config { enableLog :: Bool
                      } deriving (Show)
+
+defaultConfig :: Config
+defaultConfig = Config False
 
 -- | A priority queue for Events.
 newtype EventQueue = EventQueue {
         queueAsMap :: Map Time (Seq Event)
     } deriving (Show)
 
-{-
+emptyQueue :: EventQueue
+emptyQueue = EventQueue (empty)
+
 -- | A log of events and the times they occur.
-type EventLog ev = DList (Time, ev)
+type EventLog = [(Time, Event)]
 
-type HandlerMap world = Event ev => Map HandlerId (Handler world ev)
+emptyLog :: EventLog
+emptyLog = []
 
-data HandlerId = HandlerId String
-                 deriving (Show, Eq, Ord)
+-- | The handler holder
+type HandlerMap world = Map HandlerId (HandlerWrapper world)
 
-data SimState world = Event =>
-    SimState { stCurrTime :: ! Time
-             , stEvQueue  :: EventQueue
-             , stEvLog    :: EventLog
-             , stHandlers :: HandlerMap world
-             , stWorld    :: ! world
-             , stConfig   :: Config -- TODO: Change this to a reader
-             }
--}
+emptyHandlers :: HandlerMap world
+emptyHandlers = empty
+
+newtype HandlerId = HandlerId Integer
+                    deriving (Show, Eq, Ord)
+
 data SimState world =
-    SimState { stCurrTime :: ! Time
-             , stWorld    :: ! world
-             , stConfig   :: Config -- TODO: Change this to a reader
+    SimState { _currTime        :: !Time
+             , _evQueue         :: EventQueue
+             , _evLog           :: EventLog
+             , _nextHandlerId   :: Integer
+             , _handlers        :: HandlerMap world
+             , _world           :: !world
              }
+makeLenses ''SimState
 
--- | The sim manad.
-newtype Sim world a = Sim {
-    runSim :: State (SimState world) a
-    } deriving (Monad, MonadState (SimState world), Functor)
+defaultState :: world -> SimState world
+defaultState w = SimState 0
+                          emptyQueue
+                          emptyLog
+                          0
+                          emptyHandlers
+                          w
+
+
 

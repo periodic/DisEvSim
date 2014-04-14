@@ -29,6 +29,3 @@ dequeue (EventQueue queue) =
                 else 
                     let queue'' = M.insert t s' queue'
                     in Just ((t, ev), EventQueue queue'')
-
-emptyQueue :: EventQueue
-emptyQueue = EventQueue M.empty
