@@ -15,6 +15,11 @@ instance EventData TestEvent where
 instance Arbitrary TestEvent where
     arbitrary = TestEvent <$> arbitrary
 
+data TestHandler = TestHandler (TestEvent -> Sim Int Int)
+
+emptyHandler :: TestEvent -> Sim Int ()
+emptyHandler = return . const ()
+
 runQuickCheck :: IO Bool -> IO ()
 runQuickCheck tests = do
     result <- tests

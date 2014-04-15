@@ -29,7 +29,7 @@ instance Show Event where
 -- | The sim monad.
 newtype Sim world a = Sim {
     makeSim :: ReaderT Config (State (SimState world)) a
-    } deriving (Monad, MonadState (SimState world), Functor)
+    } deriving (Monad, MonadState (SimState world), Functor, Typeable)
 
 runSim :: Config -> SimState world -> Sim world a -> (a, SimState world)
 runSim config st = flip runState st . flip runReaderT config . makeSim
@@ -45,9 +45,7 @@ type Handler world e = e -> Sim world ()
 
 -- | Wraps a handler to genericize it.
 data HandlerWrapper world where
-    HandlerWrapper :: EventData e => Handler world e
-                                  -> TypeRep
-                                  -> HandlerWrapper world
+    HandlerWrapper :: EventData e => HandlerId -> Handler world e -> HandlerWrapper world
 
 -- | Configuration options.
 data Config = Config { enableLog :: Bool
@@ -71,10 +69,14 @@ emptyLog :: EventLog
 emptyLog = []
 
 -- | The handler holder
-type HandlerMap world = Map HandlerId (HandlerWrapper world)
+data HandlerMap world = HandlerMap {
+    nextHandlerId       :: Integer,
+    idToTypeMap         :: Map HandlerId TypeRep,
+    typeToHandlerMap    :: Map TypeRep (Map HandlerId (HandlerWrapper world))
+    }
 
 emptyHandlers :: HandlerMap world
-emptyHandlers = empty
+emptyHandlers = HandlerMap 0 empty empty
 
 newtype HandlerId = HandlerId Integer
                     deriving (Show, Eq, Ord)
@@ -83,7 +85,6 @@ data SimState world =
     SimState { _currTime        :: !Time
              , _evQueue         :: EventQueue
              , _evLog           :: EventLog
-             , _nextHandlerId   :: Integer
              , _handlers        :: HandlerMap world
              , _world           :: !world
              }
@@ -93,7 +94,6 @@ defaultState :: world -> SimState world
 defaultState w = SimState 0
                           emptyQueue
                           emptyLog
-                          0
                           emptyHandlers
                           w
 

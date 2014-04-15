@@ -15,8 +15,6 @@ Cabal-version:      >= 1.2
 --                         DisEvSim.Debug
 --     Other-modules:      DisEvSim.Common,
 --                         DisEvSim.EventQueue,
---                         DisEvSim.Internal
---                         DisEvSim.Handler
 --     Build-depends:      base >= 4,
 --                         mtl,
 --                         dlist,
@@ -25,10 +23,42 @@ Cabal-version:      >= 1.2
 library
     Exposed-modules:    DisEvSim.EventQueue
     Other-modules:      DisEvSim.Common
+                        DisEvSim.HandlerMap
+                        DisEvSim.Internal
     Build-depends:      base >= 4,
                         mtl,
                         containers,
                         lens
+    Ghc-options:        -Wall -Werror
+    extensions:         DeriveDataTypeable,
+                        GADTs,
+                        GeneralizedNewtypeDeriving
+
+Test-suite event-queue-properties
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/EventQueueProperties.hs
+    build-depends:      base >=4,
+                        QuickCheck
+    Ghc-options:        -Wall -Werror
+    extensions:         DeriveDataTypeable,
+                        GADTs,
+                        GeneralizedNewtypeDeriving
+
+Test-suite handlermap-properties
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/HandlerMapProperties.hs
+    build-depends:      base >=4,
+                        QuickCheck
+    Ghc-options:        -Wall -Werror
+    extensions:         DeriveDataTypeable,
+                        GADTs,
+                        GeneralizedNewtypeDeriving
+
+Test-suite sim-properties
+    type:               exitcode-stdio-1.0
+    main-is:            DisEvSim/SimProperties.hs
+    build-depends:      base >=4,
+                        QuickCheck
     Ghc-options:        -Wall -Werror
     extensions:         DeriveDataTypeable,
                         GADTs,
@@ -44,22 +74,3 @@ library
 --                         GADTs,
 --                         GeneralizedNewtypeDeriving
 
-Test-suite event-queue-properties
-    type:               exitcode-stdio-1.0
-    main-is:            DisEvSim/EventQueueProperties.hs
-    build-depends:      base >=4,
-                        QuickCheck
-    Ghc-options:        -Wall -Werror
-    extensions:         DeriveDataTypeable,
-                        GADTs,
-                        GeneralizedNewtypeDeriving
-
-Test-suite handler-properties
-    type:               exitcode-stdio-1.0
-    main-is:            DisEvSim/HandlerProperties.hs
-    build-depends:      base >=4,
-                        QuickCheck
-    Ghc-options:        -Wall -Werror
-    extensions:         DeriveDataTypeable,
-                        GADTs,
-                        GeneralizedNewtypeDeriving

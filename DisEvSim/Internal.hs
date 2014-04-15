@@ -1,30 +1,16 @@
 -- | A simple discrete event simulator.
 module DisEvSim.Internal where
 
+{-
+
 import DisEvSim.Common
 import DisEvSim.EventQueue
-import DisEvSim.Handler
-
-import Data.Functor ((<$>))
-import qualified Data.DList as L
 import Control.Monad.State as S
-
--- | The default configuration, which enables logging.
-defaultConfig :: Config
-defaultConfig = Config { enableLog = True
-                       }
 
 -- | Runs a simulation.
 simulate :: Config -> world -> [(String, ev -> Sim world ev ())] -> ev -> Time -> (Time, [(Time, ev)], world)
-simulate conf world handlers event maxT = evalState (runSim $ simLoop maxT) initialState
-    where
-        initialState = SimState { stCurrTime    = 0
-                                , stEvQueue     = (enqueue 0 event emptyQueue)
-                                , stEvLog       = L.empty
-                                , stHandlers    = handlersFromList handlers
-                                , stWorld       = world
-                                , stConfig      = conf
-                                }
+simulate conf world handlers event maxT = evalSim (runSim $ simLoop maxT)
+                                                  (defaultState world)
 
 simLoop :: Time -> Sim world ev (Time, [(Time,ev)], world)
 simLoop maxT =
@@ -108,3 +94,4 @@ removeHandler name = do
     let hs = stHandlers st
         hs' = deleteHandler name hs
     put $ st { stHandlers = hs }
+-}
