@@ -28,6 +28,7 @@ library
     Build-depends:      base >= 4,
                         mtl,
                         containers,
+                        transformers,
                         lens
     Ghc-options:        -Wall -Werror
     extensions:         DeriveDataTypeable,
