@@ -48,11 +48,10 @@ data HandlerWrapper world where
     HandlerWrapper :: EventData e => HandlerId -> Handler world e -> HandlerWrapper world
 
 -- | Configuration options.
-data Config = Config { enableLog :: Bool
-                     } deriving (Show)
+data Config = Config deriving (Show)
 
 defaultConfig :: Config
-defaultConfig = Config False
+defaultConfig = Config
 
 -- | A priority queue for Events.
 newtype EventQueue = EventQueue {

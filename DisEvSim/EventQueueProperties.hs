@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Main where
 
+import Control.Lens
 import Control.Applicative ((<$>))
 import Data.List (unfoldr)
 import Data.Maybe (mapMaybe)
@@ -16,14 +17,12 @@ prop_PreserveOrder events =
         dequeued = unfoldr (dequeue) fullQueue
      in mapMaybe (unwrap . snd) dequeued == events
 
-prop_EventsInOrder :: [(Time, TestEvent)] -> Bool
-prop_EventsInOrder events =
+prop_EventsInOrder :: OrderedList (Time, TestEvent) -> Bool
+prop_EventsInOrder (Ordered events) =
     let fullQueue = foldr (uncurry enqueue) emptyQueue ((fmap wrap) <$> events)
         dequeued = unfoldr (dequeue) fullQueue
-     in inOrder . map fst $ dequeued
-    where
-        inOrder (a:b:cs) = if a < b then inOrder (b:cs) else False
-        inOrder _ = True
+        unwrappedDequeued = mapMaybe (\(t, mEv) -> ((,) t) <$> mEv) . over (mapped._2) unwrap $ dequeued 
+     in events == unwrappedDequeued
 
 main :: IO ()
 main = runQuickCheck $quickCheckAll

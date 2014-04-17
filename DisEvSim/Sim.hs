@@ -1,13 +1,16 @@
 -- | A simple discrete event simulator.
-module DisEvSim.Internal where
+module DisEvSim.Sim where
 
 import Control.Lens
-import Control.Monad.State as S
+--import Control.Monad.State as S
 import Data.Typeable
 
 import DisEvSim.Common
 import DisEvSim.EventQueue
 import DisEvSim.HandlerMap
+
+getLog :: SimState world -> EventLog
+getLog st = reverse . view evLog $ st
 
 getNextEvent :: Sim world (Maybe (Time, Event))
 getNextEvent = do
@@ -35,14 +38,8 @@ simLoop = do
 
 processEvent :: (Typeable world) => Event -> Sim world ()
 processEvent (Event event) = do
-    let t = typeOf event
-        mEvent = cast event
-    case mEvent of
-        Nothing -> error "Unable to cast event."
-        Just event -> do
-            handlers <- uses handlers (getAllForEvent event)
-            mapM_ ($ event) handlers
-
+    eventHandlers <- uses handlers (getAllForEvent event)
+    mapM_ ($ event) eventHandlers
 
 {-
 import DisEvSim.Common

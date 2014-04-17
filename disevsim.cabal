@@ -24,7 +24,7 @@ library
     Exposed-modules:    DisEvSim.EventQueue
     Other-modules:      DisEvSim.Common
                         DisEvSim.HandlerMap
-                        DisEvSim.Internal
+                        DisEvSim.Sim
     Build-depends:      base >= 4,
                         mtl,
                         containers,
