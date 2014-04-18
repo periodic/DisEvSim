@@ -57,6 +57,12 @@ registerHandler ev h = do
     assign handlers hMap'
     return hId
 
+unregisterHandler :: HandlerId -> Sim world ()
+unregisterHandler hId = do
+    hMap <- use handlers
+    let hMap' = delete hId hMap
+    assign handlers hMap'
+
 {-
 import DisEvSim.Common
 import DisEvSim.EventQueue
