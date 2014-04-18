@@ -7,9 +7,9 @@ import Data.Typeable
 import DisEvSim.Common
 
 insert :: EventData ev => ev -> Handler world ev -> HandlerMap world
-                             -> (HandlerId, HandlerMap world)
-insert event handler (HandlerMap nextId idMap typeMap) =
-    let t = typeOf event
+                                  -> (HandlerId, HandlerMap world)
+insert ev handler (HandlerMap nextId idMap typeMap) =
+    let t = eventType ev
         hId = HandlerId nextId
         nextId' = nextId + 1
         idMap' = M.insert hId t idMap

@@ -18,6 +18,8 @@ class Typeable a => EventData a where
     wrap ev = Event ev
     unwrap :: Event -> Maybe a
     unwrap (Event ev) = cast ev
+    eventType :: a -> TypeRep
+    eventType = typeOf
 
 -- | A wrapper to genericize events.
 data Event where

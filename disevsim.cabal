@@ -40,7 +40,7 @@ Test-suite event-queue-properties
     main-is:            DisEvSim/EventQueueProperties.hs
     build-depends:      base >=4,
                         QuickCheck
-    Ghc-options:        -Wall -Werror
+    Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,
                         GeneralizedNewtypeDeriving
@@ -50,7 +50,7 @@ Test-suite handlermap-properties
     main-is:            DisEvSim/HandlerMapProperties.hs
     build-depends:      base >=4,
                         QuickCheck
-    Ghc-options:        -Wall -Werror
+    Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,
                         GeneralizedNewtypeDeriving
@@ -60,7 +60,7 @@ Test-suite sim-properties
     main-is:            DisEvSim/SimProperties.hs
     build-depends:      base >=4,
                         QuickCheck
-    Ghc-options:        -Wall -Werror
+    Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,
                         GeneralizedNewtypeDeriving

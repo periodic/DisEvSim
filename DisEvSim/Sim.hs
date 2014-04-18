@@ -41,6 +41,22 @@ processEvent (Event event) = do
     eventHandlers <- uses handlers (getAllForEvent event)
     mapM_ ($ event) eventHandlers
 
+getWorld :: Sim world world
+getWorld = use world
+
+setWorld :: world -> Sim world ()
+setWorld = assign world
+
+modifyWorld :: (world -> world) -> Sim world ()
+modifyWorld f = getWorld >>= setWorld . f
+
+registerHandler :: EventData ev => ev -> Handler world ev -> Sim world HandlerId
+registerHandler ev h = do
+    hMap <- use handlers
+    let (hId, hMap') = insert ev h hMap
+    assign handlers hMap'
+    return hId
+
 {-
 import DisEvSim.Common
 import DisEvSim.EventQueue
