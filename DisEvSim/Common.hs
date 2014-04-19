@@ -13,7 +13,7 @@ type Time = Double
 -- | An alias for the internal representation of time deltas.
 type TimeDelta = Double
 
-class Typeable a => EventData a where
+class (Eq a, Typeable a) => EventData a where
     wrap :: a -> Event
     wrap ev = Event ev
     unwrap :: Event -> Maybe a
@@ -23,7 +23,13 @@ class Typeable a => EventData a where
 
 -- | A wrapper to genericize events.
 data Event where
-    Event :: EventData a => a -> Event
+    Event :: (Typeable ev, EventData ev) => ev -> Event
+
+instance Eq Event where
+    (Event e1) == (Event e2) = 
+        case cast e1 of
+            Nothing -> False
+            (Just e1') -> e1' == e2
 
 instance Show Event where
     show (Event ev) = "Event " ++ (show $ typeOf ev)
