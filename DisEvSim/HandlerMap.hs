@@ -20,6 +20,9 @@ insert ev handler (HandlerMap nextId idMap typeMap) =
         typeMap' = M.insert t handlerMap typeMap
     in (hId, HandlerMap nextId' idMap' typeMap')
 
+peekNextId :: HandlerMap world -> HandlerId
+peekNextId (HandlerMap nextId _ _) = HandlerId nextId
+
 delete :: HandlerId -> HandlerMap world -> HandlerMap world
 delete hId m@(HandlerMap nextId idMap typeMap) =
     let maybeType = M.lookup hId idMap

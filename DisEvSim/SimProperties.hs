@@ -89,3 +89,33 @@ prop_deregisteredHandlersNeverCalled events =
             deregisterHandler hId1
             deregisterHandler hId2
             simLoop
+
+-- | Triggers the next event in the list after a delay given by the current
+--   event.
+eventListHandler :: [TestEvent] -> TestEvent -> Sim Int ()
+eventListHandler [] (TestEvent i) = modifyWorld (+i)
+eventListHandler (ev:evs) (TestEvent i) = do
+  _ <- once undefined $ eventListHandler evs
+  modifyWorld (+i)
+  after (fromIntegral i) ev
+
+prop_AllTriggeredEventsAreCalled :: [TestEvent] -> Bool
+prop_AllTriggeredEventsAreCalled [] = True
+prop_AllTriggeredEventsAreCalled (ev:evs) =
+    let st = setupState 0 [(0, wrap ev)] :: SimState Int
+        st' = execSim defaultConfig st sim
+        expectedTotal = sum . map (\(TestEvent i) -> i) $ ev:evs
+    in view world st' == expectedTotal
+    where
+        sim = do
+            _ <- once undefined $ eventListHandler evs
+            simLoop
+
+prop_SimulateCallsInitialEvent :: TestEvent -> Bool
+prop_SimulateCallsInitialEvent event@(TestEvent i) =
+  let (_, _, (i', _)) = simulate defaultConfig 
+                                 (0, 0)
+                                 (registerHandler undefined handler1 >> return ())
+                                 event
+                                 100
+  in i' == i
