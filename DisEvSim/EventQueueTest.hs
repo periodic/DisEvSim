@@ -15,5 +15,3 @@ main = do
     if (errors > 0 || failures > 0)
         then exitFailure
         else exitSuccess
-
-

@@ -26,10 +26,11 @@ library
                         DisEvSim.HandlerMap
                         DisEvSim.Sim
     Build-depends:      base >= 4,
-                        mtl,
                         containers,
-                        transformers,
-                        lens
+                        data-default == 0.5.*,
+                        lens,
+                        mtl,
+                        transformers
     Ghc-options:        -Wall -Werror
     extensions:         DeriveDataTypeable,
                         GADTs,
@@ -39,7 +40,7 @@ Test-suite event-queue-properties
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/EventQueueProperties.hs
     build-depends:      base >=4,
-                        QuickCheck
+                        QuickCheck == 2.6.*
     Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,
@@ -49,7 +50,7 @@ Test-suite handlermap-properties
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/HandlerMapProperties.hs
     build-depends:      base >=4,
-                        QuickCheck
+                        QuickCheck == 2.6.*
     Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,
@@ -59,7 +60,7 @@ Test-suite sim-properties
     type:               exitcode-stdio-1.0
     main-is:            DisEvSim/SimProperties.hs
     build-depends:      base >=4,
-                        QuickCheck
+                        QuickCheck == 2.6.*
     Ghc-options:        -Wall -Werror -fno-warn-orphans
     extensions:         DeriveDataTypeable,
                         GADTs,

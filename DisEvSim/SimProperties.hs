@@ -2,10 +2,10 @@
 module Main where
 
 import Control.Lens
-import Data.Maybe (mapMaybe)
 import Data.List (sortBy)
-import Test.QuickCheck
+import Data.Maybe (mapMaybe)
 import Data.Typeable
+import Test.QuickCheck.All
 
 import DisEvSim.TestUtil
 import DisEvSim.Common
@@ -18,7 +18,7 @@ main = runQuickCheck $quickCheckAll
 
 setupState :: world -> EventLog -> SimState world
 setupState w events =
-    let fullQueue = foldr (uncurry enqueue) emptyQueue events
+    let fullQueue = foldr (uncurry enqueue) defaultEventQueue events
     in set evQueue fullQueue $ defaultState w
 
 filterByType :: Typeable ev => [Event] -> [ev]
@@ -31,9 +31,11 @@ sortEventList events =
 
 handler1 :: TestEvent -> Sim (Int, Int) ()
 handler1 (TestEvent i) = modifyWorld $ over _1 (+i)
+
 handler2 :: TestEvent2 -> Sim (Int, Int) ()
 handler2 (TestEvent2 i) = modifyWorld $ over _2 (+i)
 
+-- | Tests that events are triggered in order.
 prop_eventsInOrder :: [(Time, Event)] -> Bool
 prop_eventsInOrder events =
     let sortedEvents = sortEventList events
@@ -41,10 +43,11 @@ prop_eventsInOrder events =
         st' = execSim defaultConfig st simLoop
     in getLog st' == sortedEvents
 
+-- | Tests handlers are executed for all appropriate events.
 prop_handlerExecutedForAllEvents :: [(Time, Event)] -> Bool
 prop_handlerExecutedForAllEvents events =
     let handler (TestEvent i) = modifyWorld (+ i)
-        (_, handlers') = insert undefined handler $ emptyHandlers
+        (_, handlers') = insert undefined handler $ defaultHandlerMap
         st = set handlers handlers' $ setupState 0 events
         st' = execSim defaultConfig st simLoop
         expectedTotal = foldr (\(TestEvent i) -> (+ i)) 0 
@@ -52,6 +55,7 @@ prop_handlerExecutedForAllEvents events =
     in view world st' == expectedTotal
 
 -- TODO: Props about handler registration/unregistration.
+-- | Tests that handlers can be registered and will be triggered.
 prop_registeredHandlersCalled :: [(Time, Event)] -> Bool
 prop_registeredHandlersCalled events =
     let st = setupState (0,0) events :: SimState (Int, Int)
@@ -72,6 +76,7 @@ prop_registeredHandlersCalled events =
                     (Just (TestEvent2 i)) -> over _2 (+i) $ sumEvents rest
                     Nothing -> sumEvents events
 
+-- | Tests that deregistered handlers are no longer called.
 prop_deregisteredHandlersNeverCalled :: [(Time, Event)] -> Bool
 prop_deregisteredHandlersNeverCalled events =
     let st = setupState (0,0) events :: SimState (Int, Int)

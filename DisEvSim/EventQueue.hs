@@ -1,5 +1,4 @@
-module DisEvSim.EventQueue ( emptyQueue
-                           , enqueue
+module DisEvSim.EventQueue ( enqueue
                            , dequeue
                            , EventQueue
                            ) where

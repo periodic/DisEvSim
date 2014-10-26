@@ -1,9 +1,12 @@
 {-# LANGUAGE TemplateHaskell #-}
-module DisEvSim.Common where
+module DisEvSim.Common ( module DisEvSim.Common
+                       , def
+                       ) where
 
 import Control.Lens
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Default
 import Data.Map.Strict (Map, empty)
 import Data.Sequence (Seq)
 import Data.Typeable
@@ -58,22 +61,25 @@ data HandlerWrapper world where
 -- | Configuration options.
 data Config = Config deriving (Show)
 
+instance Default Config where
+    def = Config
+
 defaultConfig :: Config
-defaultConfig = Config
+defaultConfig = def
 
 -- | A priority queue for Events.
 newtype EventQueue = EventQueue {
         queueAsMap :: Map Time (Seq Event)
     } deriving (Show)
 
-emptyQueue :: EventQueue
-emptyQueue = EventQueue (empty)
+instance Default EventQueue where
+    def = EventQueue (empty)
+
+defaultEventQueue :: EventQueue
+defaultEventQueue = def
 
 -- | A log of events and the times they occur.
 type EventLog = [(Time, Event)]
-
-emptyLog :: EventLog
-emptyLog = []
 
 -- | The handler holder
 data HandlerMap world = HandlerMap {
@@ -82,8 +88,11 @@ data HandlerMap world = HandlerMap {
     typeToHandlerMap    :: Map TypeRep (Map HandlerId (HandlerWrapper world))
     }
 
-emptyHandlers :: HandlerMap world
-emptyHandlers = HandlerMap 0 empty empty
+instance Default (HandlerMap world) where
+    def = HandlerMap 0 empty empty
+
+defaultHandlerMap :: HandlerMap world
+defaultHandlerMap = def
 
 newtype HandlerId = HandlerId Integer
                     deriving (Show, Eq, Ord)
@@ -99,9 +108,9 @@ makeLenses ''SimState
 
 defaultState :: world -> SimState world
 defaultState w = SimState 0
-                          emptyQueue
-                          emptyLog
-                          emptyHandlers
+                          def
+                          def
+                          def
                           w
 
 
