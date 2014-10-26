@@ -1,23 +1,23 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell #-}
 module DisEvSim ( simulate
-                , getW
-                , putW
-                , modW
-                , getT
                 , after
-                , addHandler
-                , removeHandler
                 , defaultConfig
+                , deregisterHandler
+                , getCurrTime
+                , getWorld
+                , modifyWorld
+                , once
+                , registerHandler
+                , setWorld
                 -- Types
-                , Time
-                , DTime
+                , Config(..)
+                , EventData
                 , Handler
                 , Sim
-                , Config(..)
+                , Time
+                , TimeDelta
                 ) where
 
 import DisEvSim.Common
-import DisEvSim.EventQueue
-import DisEvSim.Internal
-import DisEvSim.Debug
+import DisEvSim.Sim
 

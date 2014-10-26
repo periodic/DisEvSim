@@ -21,8 +21,9 @@ Cabal-version:      >= 1.2
 --                         containers
 
 library
-    Exposed-modules:    DisEvSim.EventQueue
+    Exposed-modules:    DisEvSim
     Other-modules:      DisEvSim.Common
+                        DisEvSim.EventQueue
                         DisEvSim.HandlerMap
                         DisEvSim.Sim
     Build-depends:      base >= 4,
@@ -66,13 +67,13 @@ Test-suite sim-properties
                         GADTs,
                         GeneralizedNewtypeDeriving
 
--- Test-suite event-queue-tests
---     type:               exitcode-stdio-1.0
---     main-is:            DisEvSim/EventQueueTest.hs
---     build-depends:      base >=4,
---                         HUnit
---     Ghc-options:        -Wall -Werror
---     extensions:         DeriveDataTypeable,
---                         GADTs,
---                         GeneralizedNewtypeDeriving
+Test-suite counter-test
+    type:               exitcode-stdio-1.0
+    main-is:            Test/Counter.hs
+    build-depends:      base >=4,
+                        HUnit
+    Ghc-options:        -Wall -Werror
+    extensions:         DeriveDataTypeable,
+                        GADTs,
+                        GeneralizedNewtypeDeriving
 
