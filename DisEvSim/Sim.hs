@@ -2,7 +2,6 @@
 module DisEvSim.Sim where
 
 import Control.Lens
---import Control.Monad.State as S
 import Data.Typeable
 
 import DisEvSim.Common
@@ -29,16 +28,25 @@ logEvent :: Time -> Event -> Sim world ()
 logEvent t event = evLog %= ((t, event) :)
 
 -- | The main simulator loop.
-simLoop :: Typeable world => Sim world ()
-simLoop = do
+simLoop :: Typeable world => Maybe Time -> Sim world ()
+simLoop mTMax = do
     mEvent <- getNextEvent
-    case mEvent of
-        Nothing -> return ()
-        Just (t, event) -> do
-            logEvent t event
-            assign currTime t
-            processEvent event
-            simLoop
+    case (mEvent, mTMax) of
+        -- No events left
+        (Nothing, _) -> return ()
+        -- Event but no max time.
+        (Just (t, event), Nothing) -> runEvent t event
+        -- Event and max-time specified
+        (Just (t, event), Just tMax) ->
+          if t > tMax
+          then assign currTime tMax
+          else runEvent t event
+    where
+      runEvent t event = do
+          logEvent t event
+          assign currTime t
+          processEvent event
+          simLoop mTMax
 
 -- | Runs all handlers for an event.
 processEvent :: (Typeable world) => Event -> Sim world ()
@@ -89,18 +97,15 @@ getCurrTime :: Sim world Time
 getCurrTime = use currTime
 
 -- | Adds an new event to the queue n seconds from now.
-after :: EventData ev => Time -> ev -> Sim world ()
+after :: EventData ev => TimeDelta -> ev -> Sim world ()
 after dt ev = do
   t <- use currTime
   evQueue %= enqueue (t + dt) (wrap ev)
 
 -- | Brings it all together by running the whole simulation.
-simulate :: (EventData ev, Typeable world) => Config -> world -> Sim world () -> ev -> Time -> (Time, EventLog, world)
-simulate _ w sim ev _ =
-  let eventQueue = enqueue 0 (wrap ev) defaultEventQueue
-      state = set evQueue eventQueue $ defaultState w
-      state' = execSim defaultConfig state (sim >> simLoop)
-
+simulate :: Typeable world => Config -> world -> Sim world () -> (Time, EventLog, world)
+simulate config w sim =
+  let state' = execSim defaultConfig (defaultState w) (sim >> simLoop (maxTime config))
       t' = state' ^. currTime
       log' = getLog state'
       w' = state' ^. world

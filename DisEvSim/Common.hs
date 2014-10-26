@@ -40,7 +40,7 @@ instance Show Event where
 -- | The sim monad.
 newtype Sim world a = Sim {
     makeSim :: ReaderT Config (State (SimState world)) a
-    } deriving (Monad, MonadState (SimState world), Functor, Typeable)
+    } deriving (Monad, MonadReader Config, MonadState (SimState world), Functor, Typeable)
 
 runSim :: Config -> SimState world -> Sim world a -> (a, SimState world)
 runSim config st = flip runState st . flip runReaderT config . makeSim
@@ -59,10 +59,12 @@ data HandlerWrapper world where
     HandlerWrapper :: EventData e => HandlerId -> Handler world e -> HandlerWrapper world
 
 -- | Configuration options.
-data Config = Config deriving (Show)
+data Config = Config {
+    maxTime :: Maybe Time
+    } deriving (Show)
 
 instance Default Config where
-    def = Config
+    def = Config Nothing
 
 defaultConfig :: Config
 defaultConfig = def

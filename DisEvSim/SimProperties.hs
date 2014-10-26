@@ -9,17 +9,20 @@ import Test.QuickCheck.All
 
 import DisEvSim.TestUtil
 import DisEvSim.Common
-import DisEvSim.EventQueue
-import DisEvSim.HandlerMap
 import DisEvSim.Sim
 
 main :: IO ()
 main = runQuickCheck $quickCheckAll
 
-setupState :: world -> EventLog -> SimState world
-setupState w events =
-    let fullQueue = foldr (uncurry enqueue) defaultEventQueue events
-    in set evQueue fullQueue $ defaultState w
+addEvents :: [(Time, Event)] -> Sim world ()
+addEvents = mapM_ (uncurry addEvent)
+  where
+    addEvent :: Time -> Event -> Sim world ()
+    addEvent t ev = do
+            let ev1 = unwrap ev :: Maybe TestEvent
+                ev2 = unwrap ev :: Maybe TestEvent2
+            maybe (return ()) (after t) ev1
+            maybe (return ()) (after t) ev2
 
 filterByType :: Typeable ev => [Event] -> [ev]
 filterByType = mapMaybe (\(Event event) -> cast event)
@@ -36,36 +39,23 @@ handler2 :: TestEvent2 -> Sim (Int, Int) ()
 handler2 (TestEvent2 i) = modifyWorld $ over _2 (+i)
 
 -- | Tests that events are triggered in order.
-prop_eventsInOrder :: [(Time, Event)] -> Bool
+prop_eventsInOrder :: [(Time, TestEvent)] -> Bool
 prop_eventsInOrder events =
-    let sortedEvents = sortEventList events
-        st = setupState 0 sortedEvents :: SimState Int
-        st' = execSim defaultConfig st simLoop
-    in getLog st' == sortedEvents
+    let sortedEvents = sortEventList $ over (mapped . _2) wrap events
+        initialize = mapM_ (\(t, ev) -> after t ev) events
+        (_, log', _) = simulate defaultConfig (0 :: Integer) initialize
+    in log' == sortedEvents
 
--- | Tests handlers are executed for all appropriate events.
-prop_handlerExecutedForAllEvents :: [(Time, Event)] -> Bool
-prop_handlerExecutedForAllEvents events =
-    let handler (TestEvent i) = modifyWorld (+ i)
-        (_, handlers') = insert undefined handler $ defaultHandlerMap
-        st = set handlers handlers' $ setupState 0 events
-        st' = execSim defaultConfig st simLoop
-        expectedTotal = foldr (\(TestEvent i) -> (+ i)) 0 
-                      . mapMaybe (unwrap . snd) $ events
-    in view world st' == expectedTotal
-
--- TODO: Props about handler registration/unregistration.
 -- | Tests that handlers can be registered and will be triggered.
 prop_registeredHandlersCalled :: [(Time, Event)] -> Bool
 prop_registeredHandlersCalled events =
-    let st = setupState (0,0) events :: SimState (Int, Int)
-        st' = execSim defaultConfig st sim
-    in view world st' == sumEvents events
+    let (_, _, w') = simulate defaultConfig (0, 0) sim
+    in w' == sumEvents events
     where
         sim = do
             _ <- registerHandler undefined handler1
             _ <- registerHandler undefined handler2
-            simLoop
+            addEvents events
         sumEvents [] = (0,0)
         sumEvents ((_, Event ev):rest) =
             let ev1 = cast ev :: Maybe TestEvent
@@ -79,16 +69,15 @@ prop_registeredHandlersCalled events =
 -- | Tests that deregistered handlers are no longer called.
 prop_deregisteredHandlersNeverCalled :: [(Time, Event)] -> Bool
 prop_deregisteredHandlersNeverCalled events =
-    let st = setupState (0,0) events :: SimState (Int, Int)
-        st' = execSim defaultConfig st sim
-    in view world st' == (0,0)
+    let (_, _, w') = simulate defaultConfig (0,0) initialize
+    in w' == (0,0)
     where
-        sim = do
+        initialize = do
             hId1 <- registerHandler undefined handler1
             hId2 <- registerHandler undefined handler2
             deregisterHandler hId1
             deregisterHandler hId2
-            simLoop
+            addEvents events
 
 -- | Triggers the next event in the list after a delay given by the current
 --   event.
@@ -101,21 +90,20 @@ eventListHandler (ev:evs) (TestEvent i) = do
 
 prop_AllTriggeredEventsAreCalled :: [TestEvent] -> Bool
 prop_AllTriggeredEventsAreCalled [] = True
-prop_AllTriggeredEventsAreCalled (ev:evs) =
-    let st = setupState 0 [(0, wrap ev)] :: SimState Int
-        st' = execSim defaultConfig st sim
-        expectedTotal = sum . map (\(TestEvent i) -> i) $ ev:evs
-    in view world st' == expectedTotal
+prop_AllTriggeredEventsAreCalled events@(ev:evs) =
+    let (_, _, w') = simulate defaultConfig 0 sim
+        expectedTotal = sum . map (\(TestEvent i) -> i) $ events
+    in w' == expectedTotal
     where
-        sim = do
-            _ <- once undefined $ eventListHandler evs
-            simLoop
+        sim = once undefined (eventListHandler evs) >> after 0 ev
 
-prop_SimulateCallsInitialEvent :: TestEvent -> Bool
-prop_SimulateCallsInitialEvent event@(TestEvent i) =
-  let (_, _, (i', _)) = simulate defaultConfig 
-                                 (0, 0)
-                                 (registerHandler undefined handler1 >> return ())
-                                 event
-                                 100
-  in i' == i
+prop_SimulateStopsInAppropriateTime :: [TestEvent] -> Bool
+prop_SimulateStopsInAppropriateTime events =
+  let recordLastHandler (TestEvent i) = setWorld i
+      maxT = 100
+      initialize = do
+          _ <- registerHandler undefined recordLastHandler
+          mapM_ (\ev@(TestEvent i) -> after (fromIntegral i) ev) events
+      config = defaultConfig { maxTime = Just maxT }
+      (t, _, i') = simulate config 0 initialize
+  in t <= maxT && fromIntegral i' <= maxT
