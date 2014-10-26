@@ -2,6 +2,9 @@
 
 A simple discrete event simulator.
 
+NOTE: This repository is currently under development for Version 2.  The
+original Version 1 is available under the tag "v1".
+
 ## Summary
 
 DisEvSim is a very simple discrete event simulator.  It keeps a queue of events
@@ -38,11 +41,19 @@ For example, you could run the following super-simple simulation of a counter.
 Breaking this down:
 
 * simulate runs a simulation
-* defaultConfig is configuration to pass in to the simulator, which currently just includes whether to turn logging of all events on or off (useful for debugging)
+* defaultConfig is configuration to pass in to the simulator, which currently
+  just includes whether to turn logging of all events on or off (useful for
+  debugging)
 * 0 is the initial state of the world
-* The next argument is a list of handlers.  The first one is named "tick" and on each event it generates a new event in 1 time-unit (In this simulation our events are the unit-type ()).  The second one is named "counter" and simply changes the state of the world by increasing it by one every time an event occurs.
-* Then we supply an initial event, in this case (), but I often have a StartSim event.
-* And finally the maximum amount of time to run (since this simulation never terminates).
+* The next argument is a list of handlers.  The first one is named "tick" and
+  on each event it generates a new event in 1 time-unit (In this simulation our
+  events are the unit-type ()).  The second one is named "counter" and simply
+  changes the state of the world by increasing it by one every time an event
+  occurs.
+* Then we supply an initial event, in this case (), but I often have a StartSim
+  event.
+* And finally the maximum amount of time to run (since this simulation never
+  terminates).
 
 In this case the ev type is `()` and the world type is `Int`.
 
@@ -52,8 +63,10 @@ In this case the ev type is `()` and the world type is `Int`.
     DisEvSim> simulate defaultConfig{enableLog = False} 0 [("tick", \_ -> after 1 ()), ("counter", \_ -> modW (+1))] () 100
     (100.0,[],101)
 
-In the ouput you see that 100.0 is the final time, [] is the log of events, and 101 is the value of the world.
+In the ouput you see that 100.0 is the final time, [] is the log of events, and
+101 is the value of the world.
 
 ## Final Remarks
 
-It is a very rough system, but it serves its purpose.  Please report any bugs or feature requests to drew.haven@gmail.com
+It is a very rough system, but it serves its purpose.  Please report any bugs
+or feature requests through the GitHub issue tracker.
